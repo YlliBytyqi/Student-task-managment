@@ -1,0 +1,12 @@
+# This covers node_modules in BOTH frontend and backend
+**/node_modules/
+
+# This covers environment variables in BOTH
+**/.env
+
+# Ignore the SQLite database file
+*.sqlite
+
+# Ignore the frontend build folder (dist or build)
+**/dist/
+**/build/
