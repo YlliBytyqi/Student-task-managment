@@ -84,6 +84,34 @@ exports.login = (req, res) => {
     });
 };
 
+exports.getUsers = (req, res) => {
+    const sql = `SELECT id, fullName, email, role, createdAt FROM Users`;
+    
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error("DB Error:", err.message);
+            return res.status(500).json({ error: "Server error" });
+        }
+        res.json(rows);
+    });
+};
+
+exports.getUserById = (req, res) => {
+    const { id } = req.params;
+    const sql = `SELECT id, fullName, email, role, createdAt FROM Users WHERE id = ?`;
+    
+    db.get(sql, [id], (err, user) => {
+        if (err) {
+            console.error("DB Error:", err.message);
+            return res.status(500).json({ error: "Server error" });
+        }
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        res.json(user);
+    });
+};
+
 // Përditëso profilin e përdoruesit (PUT /users/:id)
 exports.updateProfile = (req, res) => {
     const { id } = req.params;
