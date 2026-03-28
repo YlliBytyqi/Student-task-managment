@@ -1,6 +1,6 @@
 const db = require('../../db');
 
-// 1. Create a new Workspace
+//Create a new Workspace
 exports.createWorkspace = (req, res) => {
     const { name, description, ownerId } = req.body;
 
@@ -22,7 +22,7 @@ exports.createWorkspace = (req, res) => {
     });
 };
 
-// 2. Get all Workspaces for a specific user
+//Get all Workspaces for a specific user
 exports.getUserWorkspaces = (req, res) => {
     const { userId } = req.params;
 
