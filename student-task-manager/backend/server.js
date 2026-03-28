@@ -1,20 +1,26 @@
 const express = require('express');
 const cors = require('cors');
-const { sql, poolPromise } = require('./db'); // Path to your db.js
+const authRoutes = require('./src/routes/authRoutes');
+const db = require('./db'); 
+const workspaceController = require('./src/controllers/workspaceController');
 
 const app = express();
+
+// Workspace Routes
+app.post('/api/workspaces', workspaceController.createWorkspace);
+app.get('/api/workspaces/:userId', workspaceController.getUserWorkspaces);
 app.use(cors());
 app.use(express.json());
 
-// TEST ROUTE: Hit http://localhost:5000/users to check
-app.get('/users', async (req, res) => {
-    try {
-        const pool = await poolPromise;
-        const result = await pool.request().query('SELECT * FROM Users');
-        res.json(result.recordset);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Simple test route to see all users in your browser
+app.get('/debug-users', (req, res) => {
+    db.all("SELECT * FROM Users", [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
 });
 
 const PORT = 5000;
