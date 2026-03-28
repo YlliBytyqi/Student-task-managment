@@ -17,8 +17,8 @@ export default function Login() {
             // Save token in localStorage
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
-            // Redirect to dashboard
-            navigate('/dashboard');
+            // Redirect to Home
+            navigate('/');
         } catch (err) {
             setError(err.response?.data?.error || "Login Failed");
         }

@@ -78,7 +78,20 @@ function TaskCard({ task, openEditModal }) {
             <h4 className={`font-bold text-[#0f172a] text-sm pr-16 ${task.status === 'done' ? 'line-through text-slate-400' : ''}`}>
                 {task.title}
             </h4>
-            {task.description && <p className="text-xs text-slate-500 mt-2 line-clamp-3">{task.description}</p>}
+            
+            {task.description && (
+                <div className="mt-3 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Detyra</p>
+                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">{task.description}</p>
+                </div>
+            )}
+
+            {task.progressNotes && (
+                <div className="mt-2 bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/50">
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Ditar Progresi</p>
+                    <p className="text-xs text-blue-700 line-clamp-2 leading-relaxed italic">{task.progressNotes}</p>
+                </div>
+            )}
             
             <div className="mt-4 flex items-center justify-between gap-2">
                 <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest ${task.status === 'done' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
@@ -109,7 +122,7 @@ export default function Dashboard() {
     });
 
     const [editingTask, setEditingTask] = useState(null);
-    const [editForm, setEditForm] = useState({ description: '', status: '' });
+    const [editForm, setEditForm] = useState({ progressNotes: '', status: '' });
     const [error, setError] = useState('');
 
     const loadData = () => {
@@ -139,7 +152,7 @@ export default function Dashboard() {
     const openEditModal = (task) => {
         setEditingTask(task);
         setEditForm({
-            description: task.description || '',
+            progressNotes: task.progressNotes || '',
             status: task.status || 'todo'
         });
         setError('');
@@ -151,7 +164,7 @@ export default function Dashboard() {
         try {
             await api.put(`/tasks/${editingTask.id}`, {
                 ...editingTask,
-                description: editForm.description,
+                progressNotes: editForm.progressNotes,
                 status: editForm.status
             });
             setEditingTask(null);
@@ -292,13 +305,20 @@ export default function Dashboard() {
                                 <form onSubmit={handleUpdateTask} className="p-6 space-y-6">
                                     {error && <div className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-xl">{error}</div>}
 
+                                    {editingTask.description && (
+                                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-6">
+                                            <label className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-2">Detyra Fillestare (Kërkesa)</label>
+                                            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{editingTask.description}</p>
+                                        </div>
+                                    )}
+
                                     <div>
-                                        <label className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-2">Përshkrimi (Çfarë ke bërë?)</label>
+                                        <label className="block text-[11px] font-bold tracking-wider text-blue-500 uppercase mb-2">Ditar Progresi (Çfarë ke bërë?)</label>
                                         <textarea 
-                                            value={editForm.description}
-                                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                                            className="w-full appearance-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-700 min-h-[120px] focus:outline-none focus:ring-1 focus:ring-blue-500 bg-slate-50"
-                                            placeholder="Shkruaj progresin..."
+                                            value={editForm.progressNotes}
+                                            onChange={(e) => setEditForm({...editForm, progressNotes: e.target.value})}
+                                            className="w-full appearance-none rounded-xl border border-blue-200 px-4 py-3 text-sm text-blue-900 min-h-[120px] focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-50/30 placeholder-blue-300"
+                                            placeholder="Shkruaj progresin ose komentet e tua këtu..."
                                         />
                                     </div>
 

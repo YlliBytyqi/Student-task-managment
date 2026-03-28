@@ -34,6 +34,7 @@
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
                     description TEXT,
+                    progressNotes TEXT,
                     status TEXT NOT NULL DEFAULT 'todo',
                     priority TEXT NOT NULL DEFAULT 'medium',
                     workspaceId INTEGER NOT NULL,
@@ -46,6 +47,11 @@
 
                 // Safely try to add assignedToId column to existing databases
                 db.run(`ALTER TABLE Tasks ADD COLUMN assignedToId INTEGER REFERENCES Users(id) ON DELETE SET NULL`, (err) => {
+                    // Ignore error if column already exists
+                });
+
+                // Safely try to add progressNotes column to existing databases
+                db.run(`ALTER TABLE Tasks ADD COLUMN progressNotes TEXT`, (err) => {
                     // Ignore error if column already exists
                 });
 

@@ -24,13 +24,18 @@ exports.createWorkspace = (req, res) => {
     });
 };
 
-//Get all Workspaces for a specific user
+//Get all Workspaces for a specific user (Owned or Assigned to)
 exports.getUserWorkspaces = (req, res) => {
     const { userId } = req.params;
 
-    const sql = `SELECT * FROM Workspaces WHERE ownerId = ?`;
+    const sql = `
+        SELECT DISTINCT Workspaces.* 
+        FROM Workspaces 
+        LEFT JOIN Tasks ON Workspaces.id = Tasks.workspaceId 
+        WHERE Workspaces.ownerId = ? OR Tasks.assignedToId = ?
+    `;
     
-    db.all(sql, [userId], (err, rows) => {
+    db.all(sql, [userId, userId], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }

@@ -82,15 +82,15 @@ router.get('/:id', verifyToken, (req, res) => {
 
 router.put('/:id', verifyToken, (req, res) => {
     const { id } = req.params;
-    const { title, description, status, priority, assignedToId } = req.body;
+    const { title, description, progressNotes, status, priority, assignedToId } = req.body;
 
     const sql = `
         UPDATE Tasks
-        SET title = ?, description = ?, status = ?, priority = ?, assignedToId = ?
+        SET title = ?, description = ?, progressNotes = ?, status = ?, priority = ?, assignedToId = ?
         WHERE id = ?
     `;
 
-    db.run(sql, [title, description || null, status || 'todo', priority || 'medium', assignedToId || null, id], function (err) {
+    db.run(sql, [title, description || null, progressNotes || null, status || 'todo', priority || 'medium', assignedToId || null, id], function (err) {
         if (err) return res.status(400).json({ error: err.message });
         if (this.changes === 0) return res.status(404).json({ error: 'Task not found' });
 
