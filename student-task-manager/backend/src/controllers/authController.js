@@ -95,3 +95,26 @@ exports.getUserById = (req, res) => {
         res.json(user); // Kthen të dhënat e përdoruesit (Personit B mund t'i duhet për të verifikuar pronarin)
     });
 };
+
+// Përditëso profilin e përdoruesit (PUT /users/:id)
+exports.updateProfile = (req, res) => {
+    const { id } = req.params;
+    const { fullName, email } = req.body;
+
+    if (!fullName || !email) {
+        return res.status(400).json({ error: "Emri dhe Email-i janë të domosdoshëm!" });
+    }
+
+    const sql = `UPDATE Users SET fullName = ?, email = ? WHERE id = ?`;
+    
+    db.run(sql, [fullName, email, id], function(err) {
+        if (err) {
+            console.error("❌ Update Profile Error:", err.message);
+            // Kjo zakonisht ndodh nëse emaili ekziston tek dikush tjetër për shkak të rregullit UNIQUE
+            return res.status(400).json({ error: "Email-i tashmë ekziston tek nje llogari tjeter." });
+        }
+        
+        // Kthen prapë të dhënat e përditësuara për t'i ruajtur në frontend (vlerë e thatë)
+        res.json({ message: "Profili u përditësua me sukses!", updatedUser: { id: parseInt(id), fullName, email }});
+    });
+};

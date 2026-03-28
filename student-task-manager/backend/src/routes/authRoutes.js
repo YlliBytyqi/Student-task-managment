@@ -7,5 +7,6 @@ router.post('/register', authController.register);
 router.post('/login', authController.login); // Ruta për t'u loguar
 router.get('/users', authController.getUsers); // Ruta për të marrë listën e përdoruesve
 router.get('/users/:id', authController.getUserById); // Ruta për të marrë një përdorues fiks
+router.put('/users/:id', authController.updateProfile); // Ruta për të përditësuar profilin
 
 module.exports = router;

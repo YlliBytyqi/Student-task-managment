@@ -7,13 +7,22 @@ const taskRoutes = require('./src/routes/taskRoutes');
 
 const app = express();
 
-app.post('/api/workspaces', workspaceController.createWorkspace);
-app.get('/api/workspaces/:userId', workspaceController.getUserWorkspaces);
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Auth
 app.use('/api/auth', authRoutes);
 
+// Workspaces
+app.post('/api/workspaces', workspaceController.createWorkspace);
+app.get('/api/workspaces/:userId', workspaceController.getUserWorkspaces);
+app.delete('/api/workspaces/:id', workspaceController.deleteWorkspace);
+
+// Tasks
+app.use('/api/tasks', taskRoutes);
+
+// Utilities
 app.get('/debug-users', (req, res) => {
     db.all("SELECT * FROM Users", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -21,24 +30,11 @@ app.get('/debug-users', (req, res) => {
     });
 });
 
-// Ruta kryesore që të mos dalë "Cannot GET /"
 app.get('/', (req, res) => {
     res.send('Mirësevini në Serverin e Student Task Manager! API është aktiv. 🚀');
 });
+
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
-app.post('/workspaces', (req, res) => {
-    const { name, description, ownerId } = req.body;
-    const sql = `INSERT INTO Workspaces (name, description, ownerId) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [name, description, ownerId], function(err) {
-        if (err) return res.status(400).json({ error: err.message });
-        res.status(201).json({ id: this.lastID, message: "Workspace created!" });
-    });
-});
-
-
-app.use('/tasks', taskRoutes);

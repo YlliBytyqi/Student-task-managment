@@ -21,4 +21,13 @@ router.get('/', (req, res) => {
     });
 });
 
+//Delete Task
+router.delete('/:id', (req, res) => {
+    const { id } = req.params;
+    db.run("DELETE FROM Tasks WHERE id = ?", [id], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Task deleted successfully!" });
+    });
+});
+
 module.exports = router;

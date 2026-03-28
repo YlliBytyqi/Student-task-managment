@@ -35,3 +35,19 @@ exports.getUserWorkspaces = (req, res) => {
         res.status(200).json(rows);
     });
 };
+
+//Delete a Workspace
+exports.deleteWorkspace = (req, res) => {
+    const { id } = req.params;
+    
+    // We optionally verify ownerId if we had it but for now let's just delete by id.
+    const sql = `DELETE FROM Workspaces WHERE id = ?`;
+
+    db.run(sql, [id], function(err) {
+        if (err) {
+            console.error("❌ Workspace Delete Error:", err.message);
+            return res.status(500).json({ error: "Could not delete workspace" });
+        }
+        res.status(200).json({ message: "Workspace deleted successfully!" });
+    });
+};
