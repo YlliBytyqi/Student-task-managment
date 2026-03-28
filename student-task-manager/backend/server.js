@@ -21,6 +21,10 @@ app.get('/debug-users', (req, res) => {
     });
 });
 
+// Ruta kryesore që të mos dalë "Cannot GET /"
+app.get('/', (req, res) => {
+    res.send('Mirësevini në Serverin e Student Task Manager! API është aktiv. 🚀');
+});
 const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
