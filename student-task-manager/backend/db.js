@@ -9,7 +9,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
     } else {
         console.log('✅ SQLite CONNECTED!');
 
-        // CRITICAL: Enable Foreign Key support
         db.run("PRAGMA foreign_keys = ON;");
 
         db.serialize(() => {
@@ -23,7 +22,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
 
-            // 2. Workspaces Table (Needs User ID)
             db.run(`CREATE TABLE IF NOT EXISTS Workspaces (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL,
@@ -32,7 +30,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 FOREIGN KEY (ownerId) REFERENCES Users(id) ON DELETE CASCADE
             )`);
 
-            // 3. Tasks Table (Needs Workspace and User IDs)
             db.run(`CREATE TABLE IF NOT EXISTS Tasks (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
