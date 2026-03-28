@@ -1,38 +1,108 @@
 const db = require('../../db');
 
-//Create a new Workspace
 exports.createWorkspace = (req, res) => {
-    const { name, description, ownerId } = req.body;
+    const { name, description } = req.body;
+    const ownerId = req.user.id;
 
-    if (!name || !ownerId) {
-        return res.status(400).json({ error: "Name and ownerId are required" });
+    if (!name) {
+        return res.status(400).json({ error: 'Name is required' });
     }
 
-    const sql = `INSERT INTO Workspaces (name, description, ownerId) VALUES (?, ?, ?)`;
-    
-    db.run(sql, [name, description, ownerId], function(err) {
+    const sql = `
+        INSERT INTO Workspaces (name, description, ownerId)
+        VALUES (?, ?, ?)
+    `;
+
+    db.run(sql, [name, description || null, ownerId], function (err) {
         if (err) {
-            console.error("❌ Workspace Error:", err.message);
-            return res.status(500).json({ error: "Could not create workspace" });
+            return res.status(400).json({ error: err.message });
         }
-        res.status(201).json({ 
-            message: "Workspace created!", 
-            workspaceId: this.lastID 
+
+        res.status(201).json({
+            id: this.lastID,
+            message: 'Workspace created successfully'
         });
     });
 };
 
-//Get all Workspaces for a specific user
-exports.getUserWorkspaces = (req, res) => {
-    const { userId } = req.params;
+exports.getAllWorkspaces = (req, res) => {
+    const sql = `
+        SELECT Workspaces.*, Users.fullName AS ownerName, Users.email AS ownerEmail
+        FROM Workspaces
+        JOIN Users ON Workspaces.ownerId = Users.id
+        ORDER BY Workspaces.id DESC
+    `;
 
-    const sql = `SELECT * FROM Workspaces WHERE ownerId = ?`;
-    
-    db.all(sql, [userId], (err, rows) => {
+    db.all(sql, [], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.status(200).json(rows);
+
+        res.json(rows);
+    });
+};
+
+exports.getWorkspaceById = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `
+        SELECT Workspaces.*, Users.fullName AS ownerName, Users.email AS ownerEmail
+        FROM Workspaces
+        JOIN Users ON Workspaces.ownerId = Users.id
+        WHERE Workspaces.id = ?
+    `;
+
+    db.get(sql, [id], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        if (!row) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        res.json(row);
+    });
+};
+
+exports.updateWorkspace = (req, res) => {
+    const { id } = req.params;
+    const { name, description } = req.body;
+
+    const sql = `
+        UPDATE Workspaces
+        SET name = ?, description = ?
+        WHERE id = ?
+    `;
+
+    db.run(sql, [name, description || null, id], function (err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        res.json({ message: 'Workspace updated successfully' });
+    });
+};
+
+exports.deleteWorkspace = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `DELETE FROM Workspaces WHERE id = ?`;
+
+    db.run(sql, [id], function (err) {
+        if (err) {
+            return res.status(400).json({ error: err.message });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        res.json({ message: 'Workspace deleted successfully' });
     });
 };
 
