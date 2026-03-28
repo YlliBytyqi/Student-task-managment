@@ -31,11 +31,14 @@ export default function Navbar({ children }) {
                 
                 <div className="overflow-y-auto">
                     {/* Logo Area */}
-                    <div className="flex items-center gap-3 px-6 py-8 border-b border-transparent">
-                        <div className="bg-[#0f172a] p-2 rounded-xl">
+                    <div 
+                        className="flex items-center gap-3 px-6 py-8 border-b border-transparent cursor-pointer group"
+                        onClick={() => navigate('/')}
+                    >
+                        <div className="bg-[#0f172a] p-2 rounded-xl group-hover:bg-blue-600 transition-colors">
                             <LayoutDashboard className="w-5 h-5 text-white" />
                         </div>
-                        <span className="font-extrabold text-xl tracking-tight text-[#0f172a]">TaskFlow</span>
+                        <span className="font-extrabold text-xl tracking-tight text-[#0f172a] group-hover:text-blue-600 transition-colors">TaskFlow</span>
                     </div>
 
                     {/* Navigation Items */}
@@ -53,12 +56,14 @@ export default function Navbar({ children }) {
                                     workspaces.map(ws => (
                                         <Link
                                             key={ws.id}
-                                            to="/workspaces"
+                                            to={`/workspace/${ws.id}/dashboard`}
                                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${
-                                                (location.pathname.startsWith('/workspaces') || location.pathname === '/dashboard') ? 'text-slate-600 hover:bg-slate-50' : 'text-slate-600 hover:bg-slate-50'
+                                                location.pathname.startsWith(`/workspace/${ws.id}`) 
+                                                ? 'bg-[#0f172a] text-white shadow-md' 
+                                                : 'text-slate-600 hover:bg-slate-50'
                                             }`}
                                         >
-                                            <Hash className="w-4 h-4 text-slate-400" />
+                                            <Hash className={`w-4 h-4 ${location.pathname.startsWith(`/workspace/${ws.id}`) ? 'text-slate-300' : 'text-slate-400'}`} />
                                             <span className="truncate">{ws.name}</span>
                                         </Link>
                                     ))

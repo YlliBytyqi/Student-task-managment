@@ -73,13 +73,18 @@ export default function Workspaces() {
                             </div>
                         ) : (
                             workspaces.map((ws) => (
-                                <div key={ws.id} className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow flex justify-between items-start group">
+                                <div key={ws.id} 
+                                     onClick={() => window.location.href = `/workspace/${ws.id}/dashboard`}
+                                     className="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md transition-shadow flex justify-between items-start group cursor-pointer">
                                     <div>
-                                        <h3 className="text-lg font-bold text-[#0f172a]">{ws.name}</h3>
+                                        <h3 className="text-lg font-bold text-[#0f172a] group-hover:text-blue-600 transition-colors">{ws.name}</h3>
                                         {ws.description && <p className="text-sm text-slate-500 mt-2">{ws.description}</p>}
                                     </div>
                                     <button 
-                                        onClick={() => handleDeleteWorkspace(ws.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteWorkspace(ws.id);
+                                        }}
                                         className="text-slate-300 hover:text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors opacity-0 group-hover:opacity-100"
                                         title="Fshi Workspace"
                                     >

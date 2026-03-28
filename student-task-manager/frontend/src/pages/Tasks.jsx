@@ -13,7 +13,9 @@ export default function Tasks() {
     const [status, setStatus] = useState('todo'); // 'todo', 'in-progress', 'done'
     const [priority, setPriority] = useState('medium'); // 'low', 'medium', 'high'
     const [workspaceId, setWorkspaceId] = useState('');
+    const [assignedToId, setAssignedToId] = useState(''); // Gjëja e re: Kujt i caktohet
     const [user, setUser] = useState(null);
+    const [usersList, setUsersList] = useState([]); // Lista e personave
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -23,6 +25,11 @@ export default function Tasks() {
             setUser(parsed);
             loadWorkspaces(parsed.id);
             loadTasks();
+            
+            // Tërhiq gjithë users për dropdown e delegimit
+            api.get('/auth/users')
+               .then(res => setUsersList(res.data))
+               .catch(err => console.error(err));
         }
     }, []);
 
@@ -58,11 +65,13 @@ export default function Tasks() {
                 description, 
                 status, 
                 priority, 
-                workspaceId, 
+                workspaceId,
+                assignedToId: assignedToId || null, // Ndryshimi i ri 
                 createdById: user.id 
             });
             setTitle('');
             setDescription('');
+            setAssignedToId('');
             loadTasks();
         } catch (err) {
             setError(err.response?.data?.error || "Krijimi i task-ut dështoi.");
@@ -152,6 +161,20 @@ export default function Tasks() {
                                         <option key={w.id} value={w.id}>{w.name}</option>
                                     ))}
                                     {workspaces.length === 0 && <option value="">Nuk ka workspaces</option>}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="block text-[11px] font-bold tracking-wider text-slate-400 uppercase mb-2">Assign To (Optional)</label>
+                                <select 
+                                    value={assignedToId} 
+                                    onChange={(e) => setAssignedToId(e.target.value)}
+                                    className="w-full appearance-none rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-slate-400 bg-white"
+                                >
+                                    <option value="">-- No one assigned --</option>
+                                    {usersList.map(u => (
+                                        <option key={u.id} value={u.id}>{u.fullName}</option>
+                                    ))}
                                 </select>
                             </div>
                             

@@ -1,9 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const db = require('./db'); 
-
 const authRoutes = require('./src/routes/authRoutes');
-const workspaceRoutes = require('./src/routes/workspaceRoutes'); // We will use this file!
+const db = require('./db'); 
+const workspaceController = require('./src/controllers/workspaceController');
 const taskRoutes = require('./src/routes/taskRoutes'); 
 
 const app = express();
@@ -14,12 +13,11 @@ app.use(express.json());
 
 // Auth
 app.use('/api/auth', authRoutes);
-app.use('/api/workspaces', workspaceRoutes); 
-app.use('/api/tasks', taskRoutes);
 
 // Workspaces
 app.post('/api/workspaces', workspaceController.createWorkspace);
 app.get('/api/workspaces/:userId', workspaceController.getUserWorkspaces);
+app.get('/api/workspaces/single/:id', workspaceController.getWorkspaceById);
 app.delete('/api/workspaces/:id', workspaceController.deleteWorkspace);
 
 // Tasks

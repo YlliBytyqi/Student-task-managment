@@ -6,6 +6,7 @@ import Workspaces from './pages/Workspaces';
 import Tasks from './pages/Tasks';
 import Users from './pages/Users';
 import Profile from './pages/Profile';
+import Home from './pages/Home';
 
 // Një ProtectedRoute e thjeshtë bazuar në localStorage (siç e kërkoi rregulli)
 function ProtectedRoute({ children }) {
@@ -20,13 +21,20 @@ function ProtectedRoute({ children }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        } 
+      />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       
       {/* Protected Routes */}
       <Route 
-        path="/dashboard" 
+        path="/workspace/:workspaceId/dashboard" 
         element={
           <ProtectedRoute>
             <Dashboard />

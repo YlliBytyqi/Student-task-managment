@@ -38,9 +38,16 @@
                     priority TEXT NOT NULL DEFAULT 'medium',
                     workspaceId INTEGER NOT NULL,
                     createdById INTEGER NOT NULL,
+                    assignedToId INTEGER,
                     FOREIGN KEY (workspaceId) REFERENCES Workspaces(id) ON DELETE CASCADE,
-                    FOREIGN KEY (createdById) REFERENCES Users(id) ON DELETE CASCADE
+                    FOREIGN KEY (createdById) REFERENCES Users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (assignedToId) REFERENCES Users(id) ON DELETE SET NULL
                 )`);
+
+                // Safely try to add assignedToId column to existing databases
+                db.run(`ALTER TABLE Tasks ADD COLUMN assignedToId INTEGER REFERENCES Users(id) ON DELETE SET NULL`, (err) => {
+                    // Ignore error if column already exists
+                });
 
                 console.log('✨ Database Schema Synced.');
             });

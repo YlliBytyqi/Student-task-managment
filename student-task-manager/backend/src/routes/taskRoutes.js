@@ -5,7 +5,7 @@ const verifyToken = require('../middleware/authMiddleware');
 const authorizeRole = require('../middleware/roleMiddleware');
 
 router.post('/', verifyToken, (req, res) => {
-    const { title, description, status, priority, workspaceId } = req.body;
+    const { title, description, status, priority, workspaceId, assignedToId } = req.body;
     const createdById = req.user.id;
 
     if (!title || !workspaceId) {
@@ -13,13 +13,13 @@ router.post('/', verifyToken, (req, res) => {
     }
 
     const sql = `
-        INSERT INTO Tasks (title, description, status, priority, workspaceId, createdById)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO Tasks (title, description, status, priority, workspaceId, createdById, assignedToId)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.run(
         sql,
-        [title, description || null, status || 'todo', priority || 'medium', workspaceId, createdById],
+        [title, description || null, status || 'todo', priority || 'medium', workspaceId, createdById, assignedToId || null],
         function (err) {
             if (err) return res.status(400).json({ error: err.message });
             res.status(201).json({ id: this.lastID, message: 'Task added successfully' });
@@ -37,6 +37,26 @@ router.get('/', verifyToken, (req, res) => {
     `;
 
     db.all(sql, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+router.get('/workspace/:workspaceId', verifyToken, (req, res) => {
+    const { workspaceId } = req.params;
+    const sql = `
+        SELECT Tasks.*, Workspaces.name AS workspaceName, 
+               creator.fullName AS createdByName, 
+               assignee.fullName AS assignedToName
+        FROM Tasks
+        JOIN Workspaces ON Tasks.workspaceId = Workspaces.id
+        JOIN Users AS creator ON Tasks.createdById = creator.id
+        LEFT JOIN Users AS assignee ON Tasks.assignedToId = assignee.id
+        WHERE Tasks.workspaceId = ?
+        ORDER BY Tasks.id DESC
+    `;
+
+    db.all(sql, [workspaceId], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -62,15 +82,15 @@ router.get('/:id', verifyToken, (req, res) => {
 
 router.put('/:id', verifyToken, (req, res) => {
     const { id } = req.params;
-    const { title, description, status, priority } = req.body;
+    const { title, description, status, priority, assignedToId } = req.body;
 
     const sql = `
         UPDATE Tasks
-        SET title = ?, description = ?, status = ?, priority = ?
+        SET title = ?, description = ?, status = ?, priority = ?, assignedToId = ?
         WHERE id = ?
     `;
 
-    db.run(sql, [title, description || null, status || 'todo', priority || 'medium', id], function (err) {
+    db.run(sql, [title, description || null, status || 'todo', priority || 'medium', assignedToId || null, id], function (err) {
         if (err) return res.status(400).json({ error: err.message });
         if (this.changes === 0) return res.status(404).json({ error: 'Task not found' });
 
