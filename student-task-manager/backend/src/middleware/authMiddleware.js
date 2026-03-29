@@ -9,11 +9,13 @@ const verifyToken = (req, res, next) => {
         return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    const token = authHeader.split(' ')[1];
+    const parts = authHeader.split(' ');
 
-    if (!token) {
-        return res.status(401).json({ error: 'Invalid token format.' });
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return res.status(401).json({ error: 'Invalid token format. Use Bearer token.' });
     }
+
+    const token = parts[1];
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET);

@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const verifyToken = require('../middleware/authMiddleware');
 
 router.post('/register', authController.register);
-router.post('/login', authController.login); // Ruta për t'u loguar
-router.get('/users', authController.getUsers); // Ruta për të marrë listën e përdoruesve
-router.get('/users/:id', authController.getUserById); // Ruta për të marrë një përdorues fiks
-router.put('/users/:id', authController.updateProfile); // Ruta për të përditësuar profilin
+router.post('/login', authController.login);
+
+router.get('/users', verifyToken, authController.getUsers);
+router.get('/users/:id', verifyToken, authController.getUserById);
+router.put('/users/:id', verifyToken, authController.updateProfile);
 
 module.exports = router;

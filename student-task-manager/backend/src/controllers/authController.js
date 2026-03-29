@@ -9,7 +9,7 @@ exports.register = async (req, res) => {
 
     try {
         if (!fullName || !email || !password) {
-            return res.status(400).json({ error: "All fields are required" });
+            return res.status(400).json({ error: 'All fields are required' });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -17,17 +17,18 @@ exports.register = async (req, res) => {
 
         db.run(sql, [fullName, email, hashedPassword], function (err) {
             if (err) {
-                console.error("DB Error:", err.message);
-                return res.status(400).json({ error: "User already exists" });
+                console.error('DB Error:', err.message);
+                return res.status(400).json({ error: 'User already exists' });
             }
+
             res.status(201).json({
-                message: "User created successfully!",
+                message: 'User created successfully!',
                 userId: this.lastID
             });
         });
     } catch (error) {
-        console.error("Catch Error:", error.message);
-        res.status(500).json({ error: "Server error" });
+        console.error('Catch Error:', error.message);
+        res.status(500).json({ error: 'Server error' });
     }
 };
 
@@ -86,12 +87,13 @@ exports.login = (req, res) => {
 
 exports.getUsers = (req, res) => {
     const sql = `SELECT id, fullName, email, role, createdAt FROM Users`;
-    
+
     db.all(sql, [], (err, rows) => {
         if (err) {
-            console.error("DB Error:", err.message);
-            return res.status(500).json({ error: "Server error" });
+            console.error('DB Error:', err.message);
+            return res.status(500).json({ error: 'Server error' });
         }
+
         res.json(rows);
     });
 };
@@ -99,38 +101,48 @@ exports.getUsers = (req, res) => {
 exports.getUserById = (req, res) => {
     const { id } = req.params;
     const sql = `SELECT id, fullName, email, role, createdAt FROM Users WHERE id = ?`;
-    
+
     db.get(sql, [id], (err, user) => {
         if (err) {
-            console.error("DB Error:", err.message);
-            return res.status(500).json({ error: "Server error" });
+            console.error('DB Error:', err.message);
+            return res.status(500).json({ error: 'Server error' });
         }
+
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(404).json({ error: 'User not found' });
         }
+
         res.json(user);
     });
 };
 
-// Përditëso profilin e përdoruesit (PUT /users/:id)
 exports.updateProfile = (req, res) => {
     const { id } = req.params;
     const { fullName, email } = req.body;
 
     if (!fullName || !email) {
-        return res.status(400).json({ error: "Emri dhe Email-i janë të domosdoshëm!" });
+        return res.status(400).json({ error: 'Full name and email are required' });
     }
 
     const sql = `UPDATE Users SET fullName = ?, email = ? WHERE id = ?`;
-    
-    db.run(sql, [fullName, email, id], function(err) {
+
+    db.run(sql, [fullName, email, id], function (err) {
         if (err) {
-            console.error("❌ Update Profile Error:", err.message);
-            // Kjo zakonisht ndodh nëse emaili ekziston tek dikush tjetër për shkak të rregullit UNIQUE
-            return res.status(400).json({ error: "Email-i tashmë ekziston tek nje llogari tjeter." });
+            console.error('Update Profile Error:', err.message);
+            return res.status(400).json({ error: 'Email already exists on another account' });
         }
-        
-        // Kthen prapë të dhënat e përditësuara për t'i ruajtur në frontend (vlerë e thatë)
-        res.json({ message: "Profili u përditësua me sukses!", updatedUser: { id: parseInt(id), fullName, email }});
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+            message: 'Profile updated successfully!',
+            updatedUser: {
+                id: parseInt(id),
+                fullName,
+                email
+            }
+        });
     });
 };
