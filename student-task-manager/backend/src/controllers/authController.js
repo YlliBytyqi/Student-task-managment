@@ -160,6 +160,10 @@ exports.updateUserRole = (req, res) => {
         return res.status(400).json({ error: 'Invalid role' });
     }
 
+    if (req.user?.role !== 'admin') {
+        return res.status(403).json({ error: 'Only admins can change roles' });
+    }
+
     const sql = `UPDATE Users SET role = ? WHERE id = ?`;
 
     db.run(sql, [role, id], function (err) {
@@ -179,5 +183,34 @@ exports.updateUserRole = (req, res) => {
                 role
             }
         });
+    });
+};
+
+exports.deleteUser = (req, res) => {
+    const { id } = req.params;
+    const reqUserId = req.user?.id;
+    const role = req.user?.role;
+
+    if (role !== 'admin') {
+        return res.status(403).json({ error: 'Only admins can delete users' });
+    }
+
+    if (parseInt(id) === reqUserId) {
+        return res.status(400).json({ error: 'Cannot delete your own account' });
+    }
+
+    const sql = `DELETE FROM Users WHERE id = ?`;
+
+    db.run(sql, [id], function (err) {
+        if (err) {
+            console.error('Delete User Error:', err.message);
+            return res.status(500).json({ error: 'Could not delete user' });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ message: 'User deleted successfully!' });
     });
 };

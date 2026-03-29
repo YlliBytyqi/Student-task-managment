@@ -5,6 +5,7 @@ const verifyToken = require('../middleware/authMiddleware');
 
 router.post('/', verifyToken, workspaceController.createWorkspace);
 router.get('/', verifyToken, workspaceController.getAllWorkspaces);
+router.get('/all', verifyToken, workspaceController.getAllSystemWorkspaces);
 router.get('/single/:id', verifyToken, workspaceController.getWorkspaceById);
 router.delete('/:id', verifyToken, workspaceController.deleteWorkspace);
 

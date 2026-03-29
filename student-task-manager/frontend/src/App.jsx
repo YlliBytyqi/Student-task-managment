@@ -4,7 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Workspaces from './pages/Workspaces';
 import Tasks from './pages/Tasks';
-import Users from './pages/Users';
+import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Home from './pages/Home';
 
@@ -86,10 +86,10 @@ export default function App() {
             />
 
             <Route
-                path="/users"
+                path="/admin"
                 element={
                     <ProtectedRoute>
-                        <Users />
+                        <AdminDashboard />
                     </ProtectedRoute>
                 }
             />

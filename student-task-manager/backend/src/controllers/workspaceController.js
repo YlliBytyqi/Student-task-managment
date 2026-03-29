@@ -279,3 +279,28 @@ exports.removeWorkspaceMember = (req, res) => {
         );
     });
 };
+
+// Admin only: Get ALL workspaces in the system
+exports.getAllSystemWorkspaces = (req, res) => {
+    const role = req.user?.role;
+
+    if (role !== 'admin') {
+        return res.status(403).json({ error: 'Only admins can view all workspaces' });
+    }
+
+    const sql = `
+        SELECT Workspaces.*, Users.fullName as ownerName, Users.email as ownerEmail
+        FROM Workspaces
+        LEFT JOIN Users ON Workspaces.ownerId = Users.id
+        ORDER BY Workspaces.id DESC
+    `;
+
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error('Get All System Workspaces Error:', err.message);
+            return res.status(500).json({ error: err.message });
+        }
+
+        res.status(200).json(rows);
+    });
+};

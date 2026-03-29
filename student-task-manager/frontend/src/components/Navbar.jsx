@@ -93,33 +93,6 @@ export default function Navbar({ children }) {
                                 )}
                             </div>
                         </div>
-
-                        {user?.role === 'admin' && (
-                            <div className="mb-8">
-                                <div className="px-3 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                                    System
-                                </div>
-                                <div className="space-y-1">
-                                    <Link
-                                        to="/users"
-                                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-colors ${
-                                            location.pathname === '/users'
-                                                ? 'bg-[#0f172a] text-white shadow-md'
-                                                : 'text-slate-600 hover:bg-slate-50'
-                                        }`}
-                                    >
-                                        <Users
-                                            className={`w-4 h-4 ${
-                                                location.pathname === '/users'
-                                                    ? 'text-white'
-                                                    : 'text-slate-400'
-                                            }`}
-                                        />
-                                        All Users
-                                    </Link>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -156,37 +129,18 @@ export default function Navbar({ children }) {
             </div>
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
-                <header className="h-20 border-b border-[#e5e7eb] bg-white flex items-center justify-between px-8 z-10 sticky top-0 shrink-0">
-                    <div className="flex-1 max-w-xl">
-                        <div className="relative border border-slate-200 rounded-2xl overflow-hidden">
-                            <input
-                                type="text"
-                                placeholder="Search tasks..."
-                                className="w-full bg-[#f8fafc] border-none py-2.5 pl-12 pr-4 text-sm focus:outline-none text-slate-600 placeholder-slate-400"
-                            />
-                            <svg
-                                className="absolute left-4 top-2.5 w-5 h-5 text-slate-400"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                                />
-                            </svg>
-                        </div>
-                    </div>
+                <header className="h-20 border-b border-[#e5e7eb] bg-white flex items-center justify-end px-8 z-10 sticky top-0 shrink-0">
 
                     <div className="flex items-center gap-4">
-                        <button
-                            className="flex items-center gap-2 bg-[#0f172a] text-white px-5 py-2.5 rounded-2xl text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm"
-                        >
-                            <Users className="w-4 h-4" />
-                            Admin Dashboard
-                        </button>
+                        {user?.role === 'admin' && (
+                            <button
+                                onClick={() => navigate('/admin')}
+                                className="flex items-center gap-2 bg-[#0f172a] text-white px-5 py-2.5 rounded-2xl text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+                            >
+                                <Users className="w-4 h-4" />
+                                Admin Dashboard
+                            </button>
+                        )}
                     </div>
                 </header>
 
