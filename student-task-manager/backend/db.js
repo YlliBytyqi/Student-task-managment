@@ -55,6 +55,14 @@
                     // Ignore error if column already exists
                 });
 
+                db.run(`CREATE TABLE IF NOT EXISTS WorkspaceMembers (
+                    workspaceId INTEGER NOT NULL,
+                    userId INTEGER NOT NULL,
+                    PRIMARY KEY (workspaceId, userId),
+                    FOREIGN KEY (workspaceId) REFERENCES Workspaces(id) ON DELETE CASCADE,
+                    FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE CASCADE
+                )`);
+
                 console.log('✨ Database Schema Synced.');
             });
         }

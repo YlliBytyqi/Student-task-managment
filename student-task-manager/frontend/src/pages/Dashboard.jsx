@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import api from '../services/api';
-import { Pencil, X, ArrowLeft, GripVertical } from 'lucide-react';
+import { Pencil, X, ArrowLeft, GripVertical, Users, Trash2, UserPlus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- DND-KIT Imports ---
@@ -124,6 +124,16 @@ export default function Dashboard() {
     const [editingTask, setEditingTask] = useState(null);
     const [editForm, setEditForm] = useState({ progressNotes: '', status: '' });
     const [error, setError] = useState('');
+    
+    // Auth
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Team Management
+    const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+    const [teamMembers, setTeamMembers] = useState([]);
+    const [allUsers, setAllUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [teamError, setTeamError] = useState('');
 
     const loadData = () => {
         if (!workspaceId) return;
@@ -142,6 +152,41 @@ export default function Dashboard() {
                 });
             })
             .catch(err => console.error("Could not fetch tasks", err));
+    };
+
+    const loadTeam = async () => {
+        try {
+            const memRes = await api.get(`/workspaces/${workspaceId}/members`);
+            setTeamMembers(memRes.data);
+            
+            const usersRes = await api.get('/auth/users');
+            setAllUsers(usersRes.data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleAddMember = async (userId) => {
+        try {
+            await api.post(`/workspaces/${workspaceId}/members`, { userId });
+            loadTeam();
+            setSearchQuery('');
+        } catch (err) {
+            setTeamError(err.response?.data?.error || "Error adding member");
+            setTimeout(() => setTeamError(''), 3000);
+        }
+    };
+
+    const handleRemoveMember = async (userId) => {
+        if (!window.confirm("A jeni i sigurt qe doni te pwrjashtoni kwtw pwrdues nga projekti?")) return;
+        try {
+            await api.delete(`/workspaces/${workspaceId}/members/${userId}`);
+            loadTeam();
+            // Refetch tasks in case some were unassigned
+            loadData();
+        } catch (err) {
+            console.error("Error removing member:", err);
+        }
     };
 
     useEffect(() => {
@@ -237,6 +282,21 @@ export default function Dashboard() {
                         <h1 className="text-4xl font-extrabold text-[#0f172a] tracking-tight">{workspace ? workspace.name : "..."}</h1>
                         {workspace?.description && <p className="text-slate-500 mt-2">{workspace.description}</p>}
                     </div>
+                    
+                    {/* Owner specific action: Manage Team */}
+                    {workspace && currentUser && workspace.ownerId === currentUser.id && (
+                        <div>
+                            <button 
+                                onClick={() => {
+                                    setIsTeamModalOpen(true);
+                                    loadTeam();
+                                }}
+                                className="flex items-center gap-2 bg-blue-50 text-blue-600 px-5 py-3 rounded-2xl text-sm font-extrabold hover:bg-blue-600 hover:text-white transition-colors border border-blue-100 shadow-sm"
+                            >
+                                <Users className="w-4 h-4" /> Manage Team
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Stats Cards */}
@@ -341,6 +401,114 @@ export default function Dashboard() {
                                         </button>
                                     </div>
                                 </form>
+                            </motion.div>
+                        </motion.div>
+                    )}
+
+                    {isTeamModalOpen && (
+                        <motion.div 
+                            initial={{ opacity: 0 }} 
+                            animate={{ opacity: 1 }} 
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4"
+                        >
+                            <motion.div 
+                                initial={{ scale: 0.95, y: 10 }} 
+                                animate={{ scale: 1, y: 0 }} 
+                                exit={{ scale: 0.95, y: 10 }}
+                                transition={{ type: "spring", duration: 0.4 }}
+                                className="bg-white rounded-[2rem] w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+                            >
+                                <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-blue-100 p-2 rounded-xl">
+                                            <Users className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-extrabold text-[#0f172a]">Manage Team Access</h3>
+                                            <p className="text-xs text-slate-500 font-medium mt-1">Shto ose largo anëtarë nga ky Workspace.</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setIsTeamModalOpen(false)}
+                                        className="p-2 bg-white hover:bg-red-50 text-slate-400 hover:text-red-500 rounded-xl transition-colors shadow-sm"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                
+                                <div className="p-6 overflow-y-auto w-full">
+                                    {teamError && <div className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-xl mb-4">{teamError}</div>}
+                                    
+                                    <div className="mb-8">
+                                        <label className="block text-xs font-bold tracking-wider text-slate-400 uppercase mb-3">Shto Anëtarë të Rinj</label>
+                                        <div className="relative">
+                                            <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+                                            <input 
+                                                type="text"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                placeholder="Kërko me emër ose email..."
+                                                className="w-full bg-[#f8fafc] border border-slate-200 rounded-2xl py-3 pl-12 pr-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                            />
+                                        </div>
+                                        
+                                        <div className="mt-3 border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-lg mx-2 max-h-48 overflow-y-auto">
+                                            {allUsers
+                                                .filter(u => u.id !== currentUser.id && !teamMembers.find(tm => tm.id === u.id))
+                                                .filter(u => searchQuery.trim() === '' || u.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                                                .map(u => (
+                                                    <div key={u.id} className="flex items-center justify-between p-3 hover:bg-slate-50 border-b border-slate-50 last:border-0">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-800">{u.fullName}</p>
+                                                            <p className="text-xs text-slate-500">{u.email}</p>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleAddMember(u.id)}
+                                                            className="flex items-center gap-1 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                                        >
+                                                            <UserPlus className="w-3.5 h-3.5" /> Shto
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            {allUsers.filter(u => u.id !== currentUser.id && !teamMembers.find(tm => tm.id === u.id)).length === 0 && (
+                                                 <div className="p-4 text-center text-xs text-slate-400 font-bold">Nuk ka llogari të tjera të disponueshme për t'i ftuar.</div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold tracking-wider text-slate-400 uppercase mb-3">Anëtarët Aktualë ({teamMembers.length})</label>
+                                        {teamMembers.length === 0 ? (
+                                            <div className="text-center bg-slate-50 rounded-2xl p-6 border border-slate-100 border-dashed">
+                                                <p className="text-sm text-slate-400 font-medium">Nuk ka asnjë anëtar tjetër në këtë grup.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {teamMembers.map(member => (
+                                                    <div key={member.id} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs">
+                                                                {member.fullName.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-800">{member.fullName}</p>
+                                                                <p className="text-[10px] text-slate-500">{member.email}</p>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleRemoveMember(member.id)}
+                                                            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+                                                            title="Largo Anëtarin"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </motion.div>
                         </motion.div>
                     )}

@@ -10,4 +10,9 @@ router.get('/:id', verifyToken, workspaceController.getWorkspaceById);
 router.put('/:id', verifyToken, workspaceController.updateWorkspace);
 router.delete('/:id', verifyToken, authorizeRole('admin'), workspaceController.deleteWorkspace);
 
+// Members Endpoints
+router.get('/:id/members', verifyToken, workspaceController.getWorkspaceMembers);
+router.post('/:id/members', verifyToken, workspaceController.addWorkspaceMember);
+router.delete('/:id/members/:userId', verifyToken, workspaceController.removeWorkspaceMember);
+
 module.exports = router;

@@ -32,10 +32,13 @@ exports.getUserWorkspaces = (req, res) => {
         SELECT DISTINCT Workspaces.* 
         FROM Workspaces 
         LEFT JOIN Tasks ON Workspaces.id = Tasks.workspaceId 
-        WHERE Workspaces.ownerId = ? OR Tasks.assignedToId = ?
+        LEFT JOIN WorkspaceMembers ON Workspaces.id = WorkspaceMembers.workspaceId
+        WHERE Workspaces.ownerId = ? 
+           OR Tasks.assignedToId = ?
+           OR WorkspaceMembers.userId = ?
     `;
     
-    db.all(sql, [userId, userId], (err, rows) => {
+    db.all(sql, [userId, userId, userId], (err, rows) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
@@ -70,5 +73,69 @@ exports.deleteWorkspace = (req, res) => {
             return res.status(500).json({ error: "Could not delete workspace" });
         }
         res.status(200).json({ message: "Workspace deleted successfully!" });
+    });
+};
+
+// --- WORKSPACE MEMBERS MANAGEMENT ---
+
+exports.getWorkspaceMembers = (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT Users.id, Users.fullName, Users.email 
+        FROM WorkspaceMembers 
+        JOIN Users ON WorkspaceMembers.userId = Users.id 
+        WHERE WorkspaceMembers.workspaceId = ?
+    `;
+    db.all(sql, [id], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+};
+
+exports.addWorkspaceMember = (req, res) => {
+    const { id } = req.params;
+    const { userId } = req.body;
+    
+    // Validate if the requestor is the owner
+    const checkOwnerSql = `SELECT ownerId FROM Workspaces WHERE id = ?`;
+    db.get(checkOwnerSql, [id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: "Workspace not found" });
+
+        // Proceed to insert the member
+        const insertSql = `INSERT INTO WorkspaceMembers (workspaceId, userId) VALUES (?, ?)`;
+        db.run(insertSql, [id, userId], function(err2) {
+            if (err2) {
+                // If it's a UNIQUE constraint error, they are already a member
+                if (err2.message.includes('UNIQUE')) {
+                    return res.status(400).json({ error: "User is already a member" });
+                }
+                return res.status(500).json({ error: err2.message });
+            }
+            res.status(201).json({ message: "Member added successfully" });
+        });
+    });
+};
+
+exports.removeWorkspaceMember = (req, res) => {
+    const { id, userId } = req.params;
+    
+    // Remove member from WorkspaceMembers
+    const deleteSql = `DELETE FROM WorkspaceMembers WHERE workspaceId = ? AND userId = ?`;
+    db.run(deleteSql, [id, userId], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        // Edge Case Handling: Unassign tasks and leave a Progress Note trail
+        const updateTasksSql = `
+            UPDATE Tasks 
+            SET assignedToId = NULL, 
+                progressNotes = COALESCE(progressNotes, '') || char(10) || char(10) || '[Sistemi]: Përdoruesi u përjashtua nga projekti. Kjo detyrë ka ngelur jetime (Unassigned).'
+            WHERE workspaceId = ? AND assignedToId = ?
+        `;
+        db.run(updateTasksSql, [id, userId], function(err2) {
+            if (err2) return res.status(500).json({ error: err2.message });
+            
+            res.json({ message: "Member removed and tasks unassigned successfully" });
+        });
     });
 };
