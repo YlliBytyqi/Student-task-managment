@@ -153,6 +153,11 @@ exports.updateProfile = (req, res) => {
 exports.updateUserRole = (req, res) => {
     const { id } = req.params;
     const { role } = req.body;
+    const requesterRole = req.user?.role;
+
+    if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: 'Only admins can update roles' });
+    }
 
     const allowedRoles = ['admin', 'student'];
 
@@ -178,6 +183,44 @@ exports.updateUserRole = (req, res) => {
                 id: parseInt(id),
                 role
             }
+        });
+    });
+};
+
+exports.deleteUser = (req, res) => {
+    const { id } = req.params;
+    const requesterId = req.user?.id;
+    const requesterRole = req.user?.role;
+
+    if (!requesterId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (requesterRole !== 'admin') {
+        return res.status(403).json({ error: 'Only admins can delete users' });
+    }
+
+    if (Number(id) === requesterId) {
+        return res.status(400).json({ error: 'Admin cannot delete their own account' });
+    }
+
+    db.get(`SELECT id FROM Users WHERE id = ?`, [id], (findErr, user) => {
+        if (findErr) {
+            console.error('Find User Error:', findErr.message);
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        db.run(`DELETE FROM Users WHERE id = ?`, [id], function (deleteErr) {
+            if (deleteErr) {
+                console.error('Delete User Error:', deleteErr.message);
+                return res.status(500).json({ error: 'Server error' });
+            }
+
+            res.json({ message: 'User deleted successfully' });
         });
     });
 };
