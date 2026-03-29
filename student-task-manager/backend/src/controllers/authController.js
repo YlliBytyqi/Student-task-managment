@@ -190,3 +190,24 @@ exports.updateUserRole = (req, res) => {
         });
     });
 };
+
+exports.deleteUser = (req, res) => {
+    const { id } = req.params;
+
+    const sql = `DELETE FROM Users WHERE id = ?`;
+
+    db.run(sql, [id], function (err) {
+        if (err) {
+            console.error('Delete User Error:', err.message);
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+            message: 'User deleted successfully'
+        });
+    });
+};
