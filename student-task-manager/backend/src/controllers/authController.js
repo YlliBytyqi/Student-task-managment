@@ -5,17 +5,20 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = 'mysecretkey';
 
 exports.register = async (req, res) => {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, role } = req.body;
 
     try {
         if (!fullName || !email || !password) {
             return res.status(400).json({ error: 'All fields are required' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const sql = `INSERT INTO Users (fullName, email, passwordHash) VALUES (?, ?, ?)`;
+        const allowedRoles = ['admin', 'student'];
+        const userRole = allowedRoles.includes(role) ? role : 'student';
 
-        db.run(sql, [fullName, email, hashedPassword], function (err) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const sql = `INSERT INTO Users (fullName, email, passwordHash, role) VALUES (?, ?, ?, ?)`;
+
+        db.run(sql, [fullName, email, hashedPassword, userRole], function (err) {
             if (err) {
                 console.error('DB Error:', err.message);
                 return res.status(400).json({ error: 'User already exists' });
@@ -142,6 +145,38 @@ exports.updateProfile = (req, res) => {
                 id: parseInt(id),
                 fullName,
                 email
+            }
+        });
+    });
+};
+
+exports.updateUserRole = (req, res) => {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    const allowedRoles = ['admin', 'student'];
+
+    if (!allowedRoles.includes(role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+    }
+
+    const sql = `UPDATE Users SET role = ? WHERE id = ?`;
+
+    db.run(sql, [role, id], function (err) {
+        if (err) {
+            console.error('Update Role Error:', err.message);
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({
+            message: 'User role updated successfully!',
+            user: {
+                id: parseInt(id),
+                role
             }
         });
     });
