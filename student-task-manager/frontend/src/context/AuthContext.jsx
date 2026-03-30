@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-// Krijo Kontekstin
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -9,12 +8,9 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('token') || null);
     const [loading, setLoading] = useState(true);
 
-    // Vendos token-in si gjendje fillestare te axios për kërkesat
     useEffect(() => {
         if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            // Mund të bëjmë një kërkesë te "/api/auth/me" këtu për të marrë profilin nëse rifreskohet faqja
-            // Për tani po e marrim me hamendje nga LocalStorage (Mund t'i shtojmë një fushë në të ardhmen)
             const storedUser = localStorage.getItem('user');
             if (storedUser) setUser(JSON.parse(storedUser));
         } else {
