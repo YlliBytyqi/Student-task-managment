@@ -4,7 +4,7 @@ import api from '../services/api';
 import { Users as UsersIcon, LayoutDashboard, Trash2, Edit2, ShieldAlert } from 'lucide-react';
 
 export default function AdminDashboard() {
-    const [activeTab, setActiveTab] = useState('users'); // 'users' or 'workspaces'
+    const [activeTab, setActiveTab] = useState('users'); 
     const [usersList, setUsersList] = useState([]);
     const [workspacesList, setWorkspacesList] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -62,7 +62,6 @@ export default function AdminDashboard() {
         try {
             await api.delete(`/auth/users/${user.id}`);
             setUsersList(usersList.filter(u => u.id !== user.id));
-            // Reload workspaces in case the deleted user owned any
             const workspacesRes = await api.get('/workspaces/all');
             setWorkspacesList(workspacesRes.data);
         } catch (err) {

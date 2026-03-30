@@ -28,7 +28,7 @@ export default function Profile() {
 
         try {
             const res = await api.put(`/auth/users/${user.id}`, { fullName, email });
-            // Përditëso LocalStorage me të dhënat e reja
+            
             const updatedProfile = { ...user, ...res.data.updatedUser };
             localStorage.setItem('user', JSON.stringify(updatedProfile));
             setUser(updatedProfile);

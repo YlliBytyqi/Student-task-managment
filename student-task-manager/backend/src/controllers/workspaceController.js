@@ -27,7 +27,6 @@ exports.createWorkspace = (req, res) => {
     });
 };
 
-// Get all Workspaces for logged-in user
 exports.getAllWorkspaces = (req, res) => {
     const userId = req.user?.id;
 

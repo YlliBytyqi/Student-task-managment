@@ -5,11 +5,9 @@ import api from '../services/api';
 import { Pencil, X, ArrowLeft, GripVertical, Users, Trash2, UserPlus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// --- DND-KIT Imports ---
 import { DndContext, closestCorners, useDroppable, useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
-// --- KanBan Kolona (Droppable Area) ---
 function KanbanColumn({ id, title, dotColor, tasks, openEditModal }) {
     const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -37,7 +35,6 @@ function KanbanColumn({ id, title, dotColor, tasks, openEditModal }) {
     );
 }
 
-// --- Karta e Taskut (Draggable Element) ---
 function TaskCard({ task, openEditModal }) {
     const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: task.id.toString(),
@@ -57,7 +54,7 @@ function TaskCard({ task, openEditModal }) {
             className={`bg-white p-5 rounded-3xl border ${isDragging ? 'border-blue-400 shadow-2xl scale-105' : 'border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-md'} transition-shadow relative group`}
         >
             <div className="absolute top-4 right-4 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {/* Butoni Edit - Mbron drag-in kur klikohet! */}
+                {}
                 <button 
                     onPointerDown={(e) => e.stopPropagation()} 
                     onClick={() => openEditModal(task)}
@@ -66,7 +63,7 @@ function TaskCard({ task, openEditModal }) {
                 >
                     <Pencil className="w-4 h-4" />
                 </button>
-                {/* Doreza (Drag Handle) për ta kapur lehtësisht */}
+                {}
                 <div 
                     {...listeners} {...attributes}
                     className="cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 p-1.5 rounded-xl"
@@ -109,7 +106,6 @@ function TaskCard({ task, openEditModal }) {
 }
 
 
-// --- Main Dashboard Component ---
 export default function Dashboard() {
     const { workspaceId } = useParams();
     const navigate = useNavigate();
@@ -125,10 +121,8 @@ export default function Dashboard() {
     const [editForm, setEditForm] = useState({ progressNotes: '', status: '' });
     const [error, setError] = useState('');
     
-    // Auth
     const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // Team Management
     const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
     const [teamMembers, setTeamMembers] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
@@ -193,7 +187,6 @@ export default function Dashboard() {
         loadData();
     }, [workspaceId]);
 
-    // Hap dritaren Edit (Modalin)
     const openEditModal = (task) => {
         setEditingTask(task);
         setEditForm({
@@ -203,7 +196,6 @@ export default function Dashboard() {
         setError('');
     };
 
-    // Përditëso Task rrotullimit në edit modal
     const handleUpdateTask = async (e) => {
         e.preventDefault();
         try {
@@ -220,19 +212,16 @@ export default function Dashboard() {
         }
     };
 
-    // Eventi kryesor Zvarrit-e-Lësho (Drag and Drop)
     const handleDragEnd = async (event) => {
         const { active, over } = event;
-        if (!over) return; // U lëshua jashtë zonave
+        if (!over) return; 
 
         const taskId = parseInt(active.id);
-        const newStatus = over.id; // over.id mban id e kolonës ('todo', 'in-progress', 'done')
+        const newStatus = over.id; 
 
-        // E gjejmë Taskun që u tërhoq nga memorja aktuale
         const allLocal = [...tasks.todo, ...tasks.inProgress, ...tasks.completed];
         const draggedTask = allLocal.find(t => t.id === taskId);
 
-        // Nëse vërtet u zhvendos në një kolonë tjetër, bëjmë ndryshimin vizual e Serveror
         if (draggedTask && draggedTask.status !== newStatus) {
             
             const oldKey = draggedTask.status === 'done' ? 'completed' : (draggedTask.status === 'in-progress' ? 'inProgress' : 'todo');
@@ -240,19 +229,18 @@ export default function Dashboard() {
 
             const taskUpdated = { ...draggedTask, status: newStatus };
 
-            // Përditësojmë pamjen direkt (Optimistic UI) pa pritur serverin
             setTasks(prev => ({
                 ...prev,
                 [oldKey]: prev[oldKey].filter(t => t.id !== taskId),
-                [newKey]: [taskUpdated, ...prev[newKey]] // E lëshon të parën në listë
+                [newKey]: [taskUpdated, ...prev[newKey]] 
             }));
 
-            // Godasim API për ta siguruar
+           
             try {
                 await api.put(`/tasks/${taskId}`, { ...taskUpdated, assignedToId: taskUpdated.assignedToId || null });
             } catch (err) {
                 console.error("Gabim në Drag&Drop Update:", err);
-                // Në rast gabimi duhet ta rikthejmë (loadData rifreskon realitetin)
+                
                 loadData();
             }
         }
@@ -264,7 +252,7 @@ export default function Dashboard() {
         <Navbar>
             <div className="max-w-6xl relative">
                 
-                {/* Dashboard Header me Back Button */}
+                {}
                 <div className="flex items-start justify-between mb-10">
                     <div>
                         <div className="flex items-center gap-2 text-xs font-black tracking-widest uppercase text-slate-400 mb-3">
@@ -283,7 +271,7 @@ export default function Dashboard() {
                         {workspace?.description && <p className="text-slate-500 mt-2">{workspace.description}</p>}
                     </div>
                     
-                    {/* Owner specific action: Manage Team */}
+                    {}
                     {workspace && currentUser && workspace.ownerId === currentUser.id && (
                         <div>
                             <button 
@@ -299,7 +287,7 @@ export default function Dashboard() {
                     )}
                 </div>
 
-                {/* Stats Cards */}
+                {}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
                     <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex flex-col justify-center">
                         <h3 className="text-xs font-black tracking-widest uppercase text-slate-400 mb-4">Total Tasks</h3>
@@ -319,21 +307,21 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                {/* DND Context Për Kanban Columns */}
+                {}
                 <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                        {/* Kolona 1 */}
+                        {}
                         <KanbanColumn id="todo" title="To Do" dotColor="bg-blue-500" tasks={tasks.todo} openEditModal={openEditModal} />
                         
-                        {/* Kolona 2 */}
+                        {}
                         <KanbanColumn id="in-progress" title="In Progress" dotColor="bg-amber-500" tasks={tasks.inProgress} openEditModal={openEditModal} />
                         
-                        {/* Kolona 3 */}
+                        {}
                         <KanbanColumn id="done" title="Done" dotColor="bg-emerald-500" tasks={tasks.completed} openEditModal={openEditModal} />
                     </div>
                 </DndContext>
 
-                {/* Edit Modal me Framer Motion (Animime Smooth) */}
+                {}
                 <AnimatePresence>
                     {editingTask && (
                         <motion.div 

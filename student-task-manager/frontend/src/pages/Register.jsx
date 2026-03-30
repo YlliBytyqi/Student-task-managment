@@ -30,7 +30,7 @@ export default function Register() {
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-10 px-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] border border-slate-100 flex flex-col items-center">
                     
-                    {/* Logo */}
+                    {}
                     <div className="bg-[#0f172a] p-3 rounded-2xl mb-6">
                         <LayoutDashboard className="w-8 h-8 text-white" />
                     </div>

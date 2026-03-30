@@ -14,10 +14,10 @@ export default function Login() {
         setError('');
         try {
             const res = await api.post('/auth/login', { email, password });
-            // Save token in localStorage
+            
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
-            // Redirect to Home
+            
             navigate('/');
         } catch (err) {
             setError(err.response?.data?.error || "Login Failed");
@@ -29,7 +29,7 @@ export default function Login() {
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-12 px-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] sm:rounded-[2rem] border border-slate-100 flex flex-col items-center">
                     
-                    {/* Logo */}
+                    {}
                     <div className="bg-[#0f172a] p-3 rounded-2xl mb-6">
                         <LayoutDashboard className="w-8 h-8 text-white" />
                     </div>
