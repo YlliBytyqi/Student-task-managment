@@ -7,6 +7,7 @@ router.post('/', verifyToken, workspaceController.createWorkspace);
 router.get('/', verifyToken, workspaceController.getAllWorkspaces);
 router.get('/all', verifyToken, workspaceController.getAllSystemWorkspaces);
 router.get('/single/:id', verifyToken, workspaceController.getWorkspaceById);
+router.put('/:id', verifyToken, workspaceController.updateWorkspace);
 router.delete('/:id', verifyToken, workspaceController.deleteWorkspace);
 
 router.get('/:id/members', verifyToken, workspaceController.getWorkspaceMembers);

@@ -279,7 +279,55 @@ exports.removeWorkspaceMember = (req, res) => {
         );
     });
 };
+//edit workspace
+exports.updateWorkspace = (req, res) => {
+    const { id } = req.params;
+    const { name } = req.body;
+    const userId = req.user?.id;
+    const role = req.user?.role;
 
+    if (!userId) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!name || !name.trim()) {
+        return res.status(400).json({ error: 'Workspace name is required' });
+    }
+
+    db.get(`SELECT * FROM Workspaces WHERE id = ?`, [id], (findErr, workspace) => {
+        if (findErr) {
+            console.error('Find Workspace Error:', findErr.message);
+            return res.status(500).json({ error: 'Server error' });
+        }
+
+        if (!workspace) {
+            return res.status(404).json({ error: 'Workspace not found' });
+        }
+
+        if (role !== 'admin' && workspace.ownerId !== userId) {
+            return res.status(403).json({ error: 'Only the workspace owner or admin can edit this workspace' });
+        }
+
+        db.run(
+            `UPDATE Workspaces SET name = ? WHERE id = ?`,
+            [name.trim(), id],
+            function (updateErr) {
+                if (updateErr) {
+                    console.error('Update Workspace Error:', updateErr.message);
+                    return res.status(500).json({ error: 'Could not update workspace' });
+                }
+
+                res.json({
+                    message: 'Workspace updated successfully',
+                    workspace: {
+                        id: Number(id),
+                        name: name.trim()
+                    }
+                });
+            }
+        );
+    });
+};
 // Admin only: Get ALL workspaces in the system
 exports.getAllSystemWorkspaces = (req, res) => {
     const role = req.user?.role;
