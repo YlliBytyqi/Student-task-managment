@@ -2,6 +2,12 @@
 
 A comprehensive full-stack web application designed for students to organize, track, and manage their daily tasks and projects effectively. Developed as part of a university lab course, this platform offers an intuitive drag-and-drop interface, real-time status updates, and robust user authentication.
 
+## 👥 Punuar nga (Authors)
+
+Ky projekt është punuar për lëndën **Laboratori 1** nga:
+- **Yll Bytyçi**
+- **Erdona Kadriolli**
+
 ## 🚀 Features
 
 - **User Authentication & Authorization**: Secure login and registration using JWT and bcrypt. Role-based access control (Admin vs. Student).
