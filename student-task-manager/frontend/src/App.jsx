@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Workspaces from './pages/Workspaces';
 import Tasks from './pages/Tasks';
+import ProjektiDetyr from './pages/ProjektiDetyr';
 import AdminDashboard from './pages/AdminDashboard';
 import Profile from './pages/Profile';
 import Home from './pages/Home';
@@ -99,6 +100,14 @@ export default function App() {
                 element={
                     <ProtectedRoute>
                         <Profile />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/projektidetyr"
+                element={
+                    <ProtectedRoute>
+                        <ProjektiDetyr />
                     </ProtectedRoute>
                 }
             />

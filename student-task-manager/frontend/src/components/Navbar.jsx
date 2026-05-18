@@ -137,6 +137,13 @@ export default function Navbar({ children }) {
                         </div>
 
                         <div className="px-4 py-6">
+                            <div>
+                                <button onClick={() => navigate('/projektidetyr')}>
+                                Projekti Detyr
+                            </button>
+                            </div>
+                            
+
                             <div className="mb-8">
                                 <div className="flex items-center justify-between px-3 text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                                     <span>Workspaces</span>
